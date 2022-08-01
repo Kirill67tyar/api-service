@@ -1,5 +1,5 @@
 from django.core.mail import send_mail
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, identify_hasher, check_password
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser,
 )
@@ -14,8 +14,7 @@ class MyUserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **kwargs):
         """
-        Creates and saves a User with the given email, date of
-        birth and password.
+        Creates and saves a User with the given email, and password.
         """
         if not email:
             raise ValueError('Пользователь Должен предоставить email для регистрации')
@@ -31,8 +30,7 @@ class MyUserManager(BaseUserManager):
 
     def create_superuser(self, email, password=None):
         """
-        Creates and saves a superuser with the given email, date of
-        birth and password.
+        Creates and saves a superuser with the given email,  and password.
         """
         user = self.create_user(
             email=email,
@@ -69,6 +67,9 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.email
 
+    def __repr__(self):
+        return self.email
+
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
         # Simplest possible answer: Yes, always
@@ -83,6 +84,25 @@ class User(AbstractBaseUser):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-    # def save(self, *args, **kwargs):
-    #     self.password = make_password(self.password)
-    #     return super().save(*args, **kwargs)
+    def get_short_name(self):
+        if not self.name:
+            return self.email
+        return self.name
+
+    def save(self, *args, **kwargs):
+        """
+        когда мы создаём superuser через консоль, то
+        Django хеширует  этот пароль, и он прилетает сюда
+        уже захешированным.
+        Когда же мы сохраняем экземпляр User через код в обработчиках,
+        то мы имеем дело с обычным текстом.
+        Поэтому, если пароль захеширован, то его нужно просто сохранить,
+        чтобы он ещё не захэшировался.
+        А если не хэшированный, то захэшировать и сохранить
+        В админке мы переопределили UserCreationForm, которая хэширует пароль
+        """
+        try:
+            identify_hasher(self.password)
+        except ValueError:
+            self.password = make_password(password=self.password)
+        super().save(*args, **kwargs)
