@@ -8,6 +8,8 @@ from django.db.models import (
     DateTimeField, CharField
 )
 
+from common.analize.analizetools import delimiter, console
+
 
 class MyUserManager(BaseUserManager):
     # use_in_migrations = True
@@ -101,8 +103,13 @@ class User(AbstractBaseUser):
         А если не хэшированный, то захэшировать и сохранить
         В админке мы переопределили UserCreationForm, которая хэширует пароль
         """
+        # --- console ---
+        delimiter()
+        console('from accounts.models.User')
+        delimiter()
+        # --- console ---
         try:
-            identify_hasher(self.password)
+            identify_hasher(self.password)  # идентифицирует хеш, или вызывает ValueError, если его нет.
         except ValueError:
             self.password = make_password(password=self.password)
         super().save(*args, **kwargs)

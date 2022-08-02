@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 from accounts.models import User
 
+from common.analize.analizetools import delimiter, console
 
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
@@ -28,6 +29,11 @@ class UserCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         # Save the provided password in hashed format
+        # --- console ---
+        delimiter()
+        console('from accounts.admins.UserCreationForm')
+        delimiter()
+        # --- console ---
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
         if commit:
