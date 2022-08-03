@@ -18,6 +18,21 @@ from rest_framework import serializers
  -- Экземпляр модели
     тогда можно передать many=False, (many=False по умолчанию)
 
+
+Как передавать:
+
+ -- для read
+    SomeSerializer(instance=<model_instance>) # один экземпляр
+    SomeSerializer(instance=<some QuerySet>, many=True) # много
+
+ -- для create
+    SomeSerializer(data=request.data) # один экземпляр
+
+ -- для update
+    SomeSerializer(instance=<model_instance>, data=request.data) # один экземпляр
+
+    
+
 Аргументы BaseSerializer(Field)
 def __init__(self, instance=None, data=empty, **kwargs)
 
@@ -35,5 +50,40 @@ def __init__(self, *, read_only=False, write_only=False,
 
 1 - вызвать метод is_valid()
 2 - обратиться по атрибуту data  -  serializer.data
+3 - если данные не валидны, то надо вернуть serializer.errors
+
+В модельных формах первым аргументом идёт data, а instance где-то в конце и по умолчанию
+В сериалайзерах не так. Первым аргументом идёт instance, а data идёт вторым аргументом
+когда ты меняешь существующую запись через модельный сериалайзер, то нужно передавать
+в instance=старую запись, а в data=request.data (новую дату)
+
+
+------------- Response
+
+class Response(SimpleTemplateResponse):
+    ' (тройные ковычки)
+    An HttpResponse that allows its data to be rendered into
+    arbitrary media types.
+    ' (тройные ковычки)
+
+    def __init__(self, data=None, status=None,
+                 template_name=None, headers=None,
+                 exception=False, content_type=None):
+        ' (тройные ковычки)
+        Alters the init arguments slightly.
+        For example, drop 'template_name', and instead use 'data'.
+
+        Setting 'renderer' and 'media_type' will typically be deferred,
+        For example being set automatically by the `APIView`.
+        ' (тройные ковычки)
+
+Принимает аргументы:
+ - data - то что передаётся serializer.data, по сути обычный словарь
+ - status - статус код, берётся из rest_framework.status (status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 """
+
+
+
+
+

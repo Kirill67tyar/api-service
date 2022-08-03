@@ -86,9 +86,9 @@ def console(*args, delimetr='- ', length=50, sdict=False):
 
 def console_compose(
         obj,
-        stype=True,
-        smro=True,
-        sdir=True,
+        stype=False,
+        smro=False,
+        sdir=False,
         delimiter=delimiter,
         start=delimiter,
         end=delimiter

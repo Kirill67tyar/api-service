@@ -103,11 +103,6 @@ class User(AbstractBaseUser):
         А если не хэшированный, то захэшировать и сохранить
         В админке мы переопределили UserCreationForm, которая хэширует пароль
         """
-        # --- console ---
-        delimiter()
-        console('from accounts.models.User')
-        delimiter()
-        # --- console ---
         try:
             identify_hasher(self.password)  # идентифицирует хеш, или вызывает ValueError, если его нет.
         except ValueError:

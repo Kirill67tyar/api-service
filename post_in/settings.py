@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'notes.apps.NotesConfig',
     'api.apps.ApiConfig',
     'debug_toolbar',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -132,3 +133,19 @@ AUTH_USER_MODEL = 'accounts.User'
 INTERNAL_IPS = [
     '127.0.0.1',
 ]
+
+# -------------------------------------- REST_FRAMEWORK
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+
+    # # permissions
+    # 'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # ],
+
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',  # закомменть, если хочешь, чтобы отдавался чистый JSON
+    ]
+}
