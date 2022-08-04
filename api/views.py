@@ -1,5 +1,24 @@
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.generics import (
+    GenericAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+    CreateAPIView,
+    DestroyAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    get_object_or_404
+)
+from rest_framework.mixins import (
+    ListModelMixin,
+    RetrieveModelMixin,
+    CreateModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+)
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -12,7 +31,9 @@ from rest_framework.status import (
 
 from notes.models import Note
 from api.serializers import (
-    NoteSerializer, NoteModelSerializer,
+    NoteSerializer,
+    NoteModelSerializer,
+    ListNoteModelSerializer,
 )
 from common.utils import get_object_or_null
 from common.analize.analizetools import (
@@ -24,7 +45,10 @@ from common.analize.analizetools import (
 def note_list_create_api_view(request):  # , format=None
     if request.method == 'GET':
         notes = Note.objects.all()
-        serializer = NoteSerializer(notes, many=True)
+        serializer = NoteSerializer(
+            instance=notes,
+            many=True
+        )
         return Response(
             data=serializer.data,
             status=HTTP_200_OK
@@ -98,3 +122,179 @@ def note_detail_update_delete_api_view(request, pk):  # , format=None
             data={'status': '404 Not Found', },
             status=HTTP_404_NOT_FOUND
         )
+
+
+http_method_names = [
+    "get",
+    "post",
+    "put",
+    "patch",
+    "delete",
+    "head",
+    "options",
+    "trace",
+]
+
+
+class NoteListAPIView(APIView):
+    model = Note
+    http_method_names = [
+        "get",
+        "post",
+        "head",
+        "options",
+    ]
+
+    def get(self, request, *args, **kwargs):
+        notes = self.model.objects.all()
+        serializer = ListNoteModelSerializer(
+            instance=notes,
+            many=True,
+            context={'request': request, }
+        )
+        return Response(
+            data=serializer.data,
+            status=HTTP_200_OK
+        )
+
+    def post(self, request, *args, **kwargs):
+        serializer = NoteModelSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                data=serializer.data,
+                status=HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                data=serializer.data,
+                status=HTTP_400_BAD_REQUEST
+            )
+
+
+class NoteDetailAPIView(APIView):  # APIView.mro --> View
+    queryset = Note.objects.all()
+    http_method_names = [
+        "get",
+        "put",
+        "head",
+        "options",
+        "delete",
+    ]
+
+    def get(self, request, pk, *args, **kwargs):
+        note = get_object_or_404(self.queryset, pk=pk)
+        serializer = NoteModelSerializer(instance=note)
+        return Response(data=serializer.data, status=HTTP_200_OK)
+
+    def put(self, request, pk, *args, **kwargs):
+        note = get_object_or_404(self.queryset, pk=pk)
+        serializer = NoteModelSerializer(
+            instance=note,
+            data=request.data
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                data=serializer.data, status=HTTP_201_CREATED
+            )
+        return Response(
+            data=serializer.data, status=HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, pk, *args, **kwargs):
+        note = get_object_or_404(
+            queryset=self.queryset,
+            pk=pk
+        )
+        note_id = note.pk
+        note.delete()
+        return Response(
+            data={'status': f'object id={note_id} was successfully deleted', },
+            status=HTTP_204_NO_CONTENT
+        )
+
+
+class NoteListCreateAPIView(ListModelMixin, CreateModelMixin, GenericAPIView):
+    queryset = Note.objects.all()
+    serializer_class = NoteModelSerializer
+    http_method_names = [
+        "get",
+        "post",
+        "options",
+        "head",
+    ]
+
+    def get_queryset(self):
+        return super().get_queryset()  # .filter()  # - ну и тут можно отсортировать как-то, related_name сделать
+
+    def get(self, request, *args, **kwargs):
+        self.serializer_class = ListNoteModelSerializer
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class NoteDetailUpdateDeleteAPIView(RetrieveModelMixin,
+                                    UpdateModelMixin,
+                                    DestroyModelMixin,
+                                    GenericAPIView):
+    serializer_class = NoteModelSerializer
+    queryset = Note.objects.all()
+    http_method_names = [
+        "get",
+        "put",
+        "delete",
+        "head",
+        "options",
+        "trace",
+    ]
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
+class EasyNoteListCreateAPIView(ListCreateAPIView):
+    serializer_class = NoteModelSerializer
+    queryset = Note.objects.all()
+    http_method_names = [
+        "get",
+        "post",
+        "head",
+        "options",
+        "trace",
+    ]
+
+    # def list(self, request, *args, **kwargs):
+    #     serializer = ListNoteModelSerializer(
+    #         instance=request.data,
+    #         many=True,
+    #         context={'request': request, }
+    #     )
+    #     return Response(serializer.data, status=HTTP_200_OK)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            self.serializer_class = ListNoteModelSerializer
+        return super().get_serializer_class()
+
+
+class EasyNoteDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = NoteSerializer
+    queryset = Note.objects.all()
+    http_method_names = [
+        "get",
+        "post",
+        "put",
+        "delete",
+        "head",
+        "options",
+        "trace",
+    ]

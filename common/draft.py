@@ -31,7 +31,7 @@ from rest_framework import serializers
  -- для update
     SomeSerializer(instance=<model_instance>, data=request.data) # один экземпляр
 
-    
+
 
 Аргументы BaseSerializer(Field)
 def __init__(self, instance=None, data=empty, **kwargs)
@@ -80,6 +80,79 @@ class Response(SimpleTemplateResponse):
 Принимает аргументы:
  - data - то что передаётся serializer.data, по сути обычный словарь
  - status - статус код, берётся из rest_framework.status (status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+
+И так:
+
+    HTTP GET
+     -- serializer = Serializer(instance=<[QuerySet ...]>, many=True)  # read (list)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)  # [OrderedDict(...
+
+     -- serializer = Serializer(instance=<instance Model>)  # read (detail)  # <class 'rest_framework.utils.serializer_helpers.ReturnDict'>
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    HTTP POST
+     -- serializer = Serializer(data=request.data)  # create
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+    HTTP PUT, PATH
+     -- serializer = Serializer(instance=<instance Model>, data=request.data)  # update
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+    HTTP DELETE
+     -- data = get_object_or_404(Model, **kwargs)
+        serializer = Serializer(instance=data)
+        data.delete()
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(
+                data={'status': 'object has successfully deleted',},
+                status=status.HTTP_204_NO_CONTENT
+                )
+
+
+------------- Миксины DRF
+
+Классы которые используют миксины:
+
+    from rest_framework.generics (
+        ListAPIView,
+        RetrieveAPIView,
+        UpdateAPIView,
+        CreateAPIView,
+        DestroyAPIView,
+    )
+
+Сами миксины
+    from rest_framework.mixins import (
+        ListModelMixin,
+        RetrieveModelMixin,
+        CreateModelMixin,
+        UpdateModelMixin,
+        DestroyModelMixin,
+    )
+C:\Users\kiril\Desktop\Job\tree-of-knowledge\Django\DRF\media\схема_GenericAPIView_3
+
+
+ -- GenericAPIView(APIView)
+    предоставляет некие методы, для связки миксинов, и дженериков типа ListAPIView, RetrieveAPIView и т.д.
+
+    Два обязательных аргумента при определении обработчика от миксинов и GenericAPIView:
+    serializer_class =
+    queryset =
+    т.к. GenericAPIView заимствуется от APIView, а тот в свояю очередь от View от Django,
+    то мы можем настраивать queryset, get_model и т.д.
+    !!! def get_queryset(self) находится в GenericAPIView
+    Это может нам понадобиться чтобы оптимизировать queryset, сделать фильтрацию по нему,
+    или select_related (JOIN), т.е. оптимизировать запрос в db
 
 """
 

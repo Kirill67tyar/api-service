@@ -24,7 +24,21 @@ class NoteSerializer(serializers.Serializer):
         return Note.objects.create(**validated_data)
 
 
+class ListNoteModelSerializer(serializers.ModelSerializer):
+    # формирует абсолютный url.
+    # нужно добавить в сериалайзер в обработчике context={'request': request,}
+    url = serializers.HyperlinkedIdentityField(view_name='api:detail')
+
+    class Meta:
+        model = Note
+        fields = ('id', 'title', 'url',)
+
+
 class NoteModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
-        fields = '__all__'
+        fields = ('id', 'title', 'text', 'created', 'updated',)  # '__all__'
+        extra_kwargs = {
+            'created': {'read_only': True, },
+            'updated': {'read_only': True, },
+        }

@@ -17,7 +17,7 @@ class Note(Model):
         verbose_name='Запись создана'
     )
     updated = DateTimeField(
-        auto_now_add=True,
+        auto_now=True,
         verbose_name='Запись изменена'
     )
 
