@@ -1,9 +1,21 @@
+from django.contrib.auth import get_user_model
 from django.db.models import (
-    Model, CharField, TextField, DateTimeField,
+    Model, CharField, TextField,
+    DateTimeField, ForeignKey, SET_NULL,
+
 )
+
+User = get_user_model()
 
 
 class Note(Model):
+    author = ForeignKey(
+        to=User,
+        on_delete=SET_NULL,
+        related_name='notes',
+        blank=False,
+        null=True,
+    )
     title = CharField(
         max_length=255,
         verbose_name='Заголовок'

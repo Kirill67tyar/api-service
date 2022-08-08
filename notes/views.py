@@ -1,3 +1,5 @@
+import inspect
+
 from django.contrib.auth.decorators import login_required
 from django.http import (
     JsonResponse, HttpRequest,
@@ -17,9 +19,8 @@ from django.views.generic.base import TemplateResponseMixin
 from common.analize.analizetools import (
     p_dir, p_mro, p_glob, p_loc, p_type,
     delimiter, p_content, show_builtins,
-    show_doc, console, console_compose,
+    show_doc, console, console_compose, console_compose2
 )
-
 
 
 def analyze_view(request):
@@ -35,14 +36,24 @@ def analyze_view(request):
     # p_type(request.GET)
     # p_dir(request.GET)
     # p_mro(request.GET)
-    console(request.headers)
-    delimiter()
-    print(request.META.get('HTTP_USER_AGENT'))
-    delimiter()
-    print(request.META.get('HTTP_X_REAL_IP'))
-    delimiter()
-    print(request.META.get('REMOTE_ADDR'))
-    delimiter()
+    # console(request.headers)
+    # delimiter()
+    # print(request.META.get('HTTP_USER_AGENT'))
+    # delimiter()
+    # print(request.META.get('HTTP_X_REAL_IP'))
+    # delimiter()
+    # print(request.META.get('REMOTE_ADDR'))
+    # delimiter()
+    # print(inspect.isclass(request))
+    # print(inspect.ismodule(request))
+    # print(inspect.ismethod(request))
+    # print(inspect.istraceback(request))
+    # print(inspect.iscode(request))
+    # print(inspect.isabstract(request))
+    # print(type(request).__name__)
+    # print(inspect.getclasstree(request))
+    # delimiter()
+    p_type(request)
     # # --- console ---
 
     if request.method == 'POST':
@@ -56,7 +67,6 @@ def analyze_view(request):
         # delimiter()
         # console(request.POST.urlencode())
         # delimiter()
-
 
         # # --- console ---
         return JsonResponse({'status': 'ok', })

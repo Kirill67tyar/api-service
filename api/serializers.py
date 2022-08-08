@@ -27,7 +27,7 @@ class NoteSerializer(serializers.Serializer):
 class ListNoteModelSerializer(serializers.ModelSerializer):
     # формирует абсолютный url.
     # нужно добавить в сериалайзер в обработчике context={'request': request,}
-    url = serializers.HyperlinkedIdentityField(view_name='api:detail')
+    url = serializers.HyperlinkedIdentityField(view_name='api:notes-detail')
 
     class Meta:
         model = Note
@@ -35,9 +35,17 @@ class ListNoteModelSerializer(serializers.ModelSerializer):
 
 
 class NoteModelSerializer(serializers.ModelSerializer):
+    # https://www.django-rest-framework.org/api-guide/fields/#serializermethodfield
+    author = serializers.SerializerMethodField(read_only=True)
+
+    def get_author(self, obj):  # obj - экземпляр Note
+        if hasattr(obj.author, 'email'):
+            return obj.author.email
+        return None
+
     class Meta:
         model = Note
-        fields = ('id', 'title', 'text', 'created', 'updated',)  # '__all__'
+        fields = ('id', 'title', 'text', 'created', 'updated', 'author',)  # '__all__'
         extra_kwargs = {
             'created': {'read_only': True, },
             'updated': {'read_only': True, },

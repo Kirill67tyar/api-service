@@ -141,9 +141,9 @@ REST_FRAMEWORK = {
 
     # # permissions
     # 'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     # ],
-
+    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',  # закомменть, если хочешь, чтобы отдавался чистый JSON

@@ -154,9 +154,73 @@ C:\Users\kiril\Desktop\Job\tree-of-knowledge\Django\DRF\media\схема_Generic
     Это может нам понадобиться чтобы оптимизировать queryset, сделать фильтрацию по нему,
     или select_related (JOIN), т.е. оптимизировать запрос в db
 
+
+------------- ViewSet
+
+Есть ViewSet - это как Form в Django
+Есть ModelViewSet - это как ModelForm в Django
+
+смотри картинку
+C:\Users\kiril\Desktop\Job\tree-of-knowledge\Django\DRF\media\схема_ViewSetMixin
+
+
+------------- request в DRF
+
+request в DRF - экземпляр класса <class 'rest_framework.request.Request'
+
+dir(request):
+    'DATA',
+     'FILES',
+     'POST',
+     'QUERY_PARAMS',
+     '_auth',
+     '_authenticate',
+     '_authenticator',
+     '_content_type',
+     '_data',
+     '_default_negotiator',
+     '_files',
+     '_full_data',
+     '_load_data_and_files',
+     '_load_stream',
+     '_not_authenticated',
+     '_parse',
+     '_request',
+     '_stream',
+     '_supports_form_parsing',
+     '_user',
+     'accepted_media_type',
+     'accepted_renderer',
+     'auth',
+     'authenticators',
+     'content_type',
+     'data',
+     'force_plaintext_errors',
+     'negotiator',
+     'parser_context',
+     'parsers',
+     'query_params',
+     'stream',
+     'successful_authenticator',
+     'user',
+     'version',
+     'versioning_scheme'
+
+
+Допустим HTTP POST запрос на url: http://127.0.0.1:8000/api/notes/?ask=1 с телом {"title": "some title with querystring"}
+
+    self.request.GET,  # {'ask': ['1']}
+    self.request.data, # {'title': 'some title with querystring'}
+    self.request.POST  # {}
+
+
+------------- permissions
+
+sources:
+    https://www.django-rest-framework.org/api-guide/permissions/
+
+
+
 """
-
-
-
-
+from rest_framework.permissions import BasePermission
 

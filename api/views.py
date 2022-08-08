@@ -28,6 +28,8 @@ from rest_framework.status import (
     HTTP_405_METHOD_NOT_ALLOWED,
 
 )
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 from notes.models import Note
 from api.serializers import (
@@ -35,9 +37,10 @@ from api.serializers import (
     NoteModelSerializer,
     ListNoteModelSerializer,
 )
+from api.permissions import IsAuthorOrAuthenticatedReadOnly
 from common.utils import get_object_or_null
 from common.analize.analizetools import (
-    delimiter, console, p_dir, p_type, p_mro
+    delimiter, console, p_dir, p_type, p_mro, console_compose2,
 )
 
 
@@ -280,7 +283,7 @@ class EasyNoteListCreateAPIView(ListCreateAPIView):
     #     )
     #     return Response(serializer.data, status=HTTP_200_OK)
 
-    def get_serializer_class(self):
+    def get_serializer_class(self):  # get_serializer_class от GenericAPIView
         if self.request.method == 'GET':
             self.serializer_class = ListNoteModelSerializer
         return super().get_serializer_class()
@@ -291,10 +294,58 @@ class EasyNoteDetailUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Note.objects.all()
     http_method_names = [
         "get",
-        "post",
         "put",
         "delete",
         "head",
         "options",
         "trace",
     ]
+
+
+class NoteModelViewSet(ModelViewSet):
+    serializer_class = NoteModelSerializer
+    queryset = Note.objects.all()
+    http_method_names = [
+        "get",
+        "post",
+        "put",
+        "patch",
+        "delete",
+        "head",
+        "options",
+        "trace",
+    ]
+    permission_classes = (IsAuthorOrAuthenticatedReadOnly,)
+
+    def get_serializer_class(self):
+        # --- console ---
+        delimiter()
+        console(
+            self.request.GET,  # если POST http://127.0.0.1:8000/api/notes/?ask=1 то будет {'ask': ['1']}
+            self.request.data,
+            self.request.POST
+            # если POST http://127.0.0.1:8000/api/notes/?ask=1 то будет {'title': 'some title with querystring'}
+            # p_dir(self.request),
+            # console_compose2(self.request, stype=1)
+
+        )
+        delimiter()
+        # --- console ---
+
+        if self.action == 'list':
+            self.serializer_class = ListNoteModelSerializer
+        return super(NoteModelViewSet, self).get_serializer_class()
+
+    # def get_queryset(self):
+    #     """
+    #         если пользователь админ, то он увидит все записи,
+    #         если пользователь не админ, но аутентифицировн, то увидит
+    #         только те, которые закреплены за конкретным пользльзователем
+    #     """
+    #     user = self.request.user
+    #     if user.is_admin:
+    #         return self.queryset
+    #     return self.queryset.filter(author=user)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)

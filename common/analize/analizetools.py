@@ -1,4 +1,12 @@
 from pprint import pprint
+import inspect
+from inspect import (
+    isclass,
+    isfunction,
+    isgenerator,
+    ismethod,
+    ismodule,
+)
 import sys
 import builtins
 from collections.abc import Mapping
@@ -24,7 +32,7 @@ def p_dir(obj):
 #     return pprint(type(obj).mro())
 
 def p_mro(obj):
-    if hasattr(obj, 'mro'):
+    if hasattr(obj, 'mro') or inspect.isclass(obj):
         return pprint(obj.mro())
     return pprint(type(obj).mro())
 
@@ -108,3 +116,158 @@ def console_compose(
             print(view)
             func(obj)
     end()
+
+
+def console_compose2(
+        *args,
+        stype=False,
+        smro=False,
+        sdir=False,
+        delimiter=delimiter,
+        **kwargs):
+    params = (
+        (stype, p_type, 'type:\n'),
+        (smro, p_mro, 'mro:\n'),
+        (sdir, p_dir, 'dir:\n'),
+
+    )
+    value_delimiter = '-'
+    delimiter(value_delimiter)
+    print()
+    for obj in args:
+        # ------ пытаемся вывести имя переменной, которою нам дали.
+        # Если не получается - выводим имя её класса
+        if any([
+            inspect.isclass(obj),
+            inspect.isfunction(obj),
+            inspect.isgenerator(obj),
+            inspect.ismethod(obj),
+            inspect.ismodule(obj),
+        ]) and hasattr(obj, '__name__'):
+            print(f'{obj.__name__}:')
+        else:
+            print(f'{obj} - instance of the {type(obj).__name__}:')
+        print()
+        try:
+            pprint(dict(obj))
+        except (ValueError, TypeError):
+            pprint(obj)
+        print()
+        for action, func, view in params:
+            if action:
+                print(f'{view}')
+                func(obj)
+                print()
+        delimiter(value_delimiter)
+        print()
+    for k, v in kwargs.items():
+        print(f'{k}:')
+        print()
+        try:
+            pprint(dict(v))
+        except (ValueError, TypeError):
+            pprint(v)
+        print()
+        for action, func, view in params:
+            if action:
+                print(f'{view}')
+                func(v)
+                print()
+
+        delimiter(value_delimiter)
+        print()
+
+
+class Console:
+    def __init__(self, *args,
+                 stype=False,
+                 smro=False,
+                 sdir=False,
+                 sdoc=False,
+                 shelp=False,
+                 delimiter='- ',
+                 **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        params = (
+            (stype, self.p_type, 'type:\n'),
+            (smro, self.p_mro, 'mro:\n'),
+            (sdir, self.p_dir, 'dir:\n'),
+            (sdoc, self.p_doc, 'doc:\n'),
+            (shelp, self.p_help, 'help:\n'),
+        )
+        self.params = {item[1]: item[-1] for item in filter(lambda x: x[0], params)}
+        self.sign = delimiter
+
+    def get_action(self, obj):
+
+        for action, func, view in self.params:
+            if action:
+                print(f'{view}')
+                func(obj)
+                print()
+        delimiter(self.sign)
+
+
+    def get_value(self):
+        pass
+
+    @staticmethod
+    def p_type(obj):
+        return print(type(obj))
+
+    @staticmethod
+    def p_mro(obj):
+        if isinstance(obj, type):
+            return pprint(obj.mro())
+        return pprint(type(obj).mro())
+
+    @staticmethod
+    def p_dir(obj):
+        return pprint(dir(obj))
+
+    @staticmethod
+    def p_doc(obj):
+        return print(obj.__doc__)
+
+    @staticmethod
+    def p_help(obj):
+        pass
+
+    def delimiter(self, sign='-+', quant=50):
+
+        print('\n\n', sign * quant, end='\n\n')
+
+
+    def output(self):
+        pass
+
+    def __str__(self):
+        pass
+
+    def __repr__(self):
+        pass
+
+
+"""
+isclass,
+    isfunction,
+    isgenerator,
+    ismethod,
+    ismodule,
+    
+    def p_dir(obj):
+    return pprint(dir(obj))
+
+
+# старая версия p_mro
+# def p_mro(obj):
+#     if isinstance(obj, type):
+#         return pprint(obj.mro())
+#     return pprint(type(obj).mro())
+
+def p_mro(obj):
+    if hasattr(obj, 'mro') or inspect.isclass(obj):
+        return pprint(obj.mro())
+    return pprint(type(obj).mro())
+"""
