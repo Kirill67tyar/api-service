@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from django.contrib.auth import get_user_model
+
 from notes.models import Note
 
 
@@ -49,4 +51,14 @@ class NoteModelSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'created': {'read_only': True, },
             'updated': {'read_only': True, },
+        }
+
+
+class UserModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'email', 'name', 'is_staff', 'is_admin', 'password',)
+        extra_kwargs = {
+            'password': {'write_only': True, },
+            'id': {'read_only': True, },
         }

@@ -222,5 +222,32 @@ sources:
 
 
 """
-from rest_framework.permissions import BasePermission
+from django.contrib.auth import login
+from django.contrib.sessions.models import Session
+from django.forms import Form, ValidationError
+from django.http import HttpResponse
 
+
+def is_banned(user):  # какая-то функция, которая проверяет забанен пользователь или нет
+    pass
+
+
+class Post: pass
+
+
+class AddPostForm(Form):
+
+    def __init__(self, user, *args, **kwargs):
+        self._user = user
+        super().__init__(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        if is_banned(self._user):
+            raise ValidationError('Доступ ограничен')
+        return super(AddPostForm, self).clean(*args, **kwargs)
+
+    def save(self):
+        self.cleaned_data['author'] = self._user
+        return Post.objects.create(**self.cleaned_data)
+
+Session

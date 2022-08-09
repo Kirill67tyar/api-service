@@ -1,5 +1,7 @@
 from django.core.mail import send_mail
-from django.contrib.auth.hashers import make_password, identify_hasher, check_password
+from django.contrib.auth.hashers import (
+    make_password, identify_hasher, check_password,
+)
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser,
 )
@@ -103,6 +105,9 @@ class User(AbstractBaseUser):
         А если не хэшированный, то захэшировать и сохранить
         В админке мы переопределили UserCreationForm, которая хэширует пароль
         """
+        delimiter()
+        print('save from model')
+        delimiter()
         try:
             identify_hasher(self.password)  # идентифицирует хеш, или вызывает ValueError, если его нет.
         except ValueError:

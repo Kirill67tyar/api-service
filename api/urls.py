@@ -19,6 +19,7 @@ from api.views import (
 
     # ModelViewSet
     NoteModelViewSet,
+    UserModelViewSet,
 )
 
 app_name = 'api'
@@ -47,5 +48,11 @@ router.register(
     prefix='notes',
     viewset=NoteModelViewSet,
     basename='notes'
+)
+router.register(
+    prefix='users',
+    viewset=UserModelViewSet,
+    basename='users'
+
 )
 urlpatterns = router.urls

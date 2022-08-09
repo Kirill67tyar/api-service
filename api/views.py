@@ -1,6 +1,10 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAdminUser
 from rest_framework.generics import (
     GenericAPIView,
     ListAPIView,
@@ -28,14 +32,13 @@ from rest_framework.status import (
     HTTP_405_METHOD_NOT_ALLOWED,
 
 )
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 
 from notes.models import Note
 from api.serializers import (
     NoteSerializer,
     NoteModelSerializer,
     ListNoteModelSerializer,
+    UserModelSerializer,
 )
 from api.permissions import IsAuthorOrAuthenticatedReadOnly
 from common.utils import get_object_or_null
@@ -43,8 +46,10 @@ from common.analize.analizetools import (
     delimiter, console, p_dir, p_type, p_mro, console_compose2,
 )
 
+User = get_user_model()
 
-@api_view(['GET', 'POST', ])  # по умолчанию идёт только GET запрос. Если запрос каоторый не указан в списке то 405
+
+@api_view(['GET', 'POST', ])  # по умолчанию идёт только GET запрос. Если запрос который не указан в списке то 405
 def note_list_create_api_view(request):  # , format=None
     if request.method == 'GET':
         notes = Note.objects.all()
@@ -347,5 +352,22 @@ class NoteModelViewSet(ModelViewSet):
     #         return self.queryset
     #     return self.queryset.filter(author=user)
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer):  # благодаря этому методу мы можем добавлять свою логику
         serializer.save(author=self.request.user)
+
+
+class UserModelViewSet(ModelViewSet):
+    model = User
+    queryset = User.objects.all()
+    serializer_class = UserModelSerializer
+    permission_classes = (IsAdminUser,)
+    http_method_names = [
+        "get",
+        "post",
+        "put",
+        "patch",
+        "delete",
+        "head",
+        "options",
+        "trace",
+    ]

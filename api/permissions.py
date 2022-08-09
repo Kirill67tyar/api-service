@@ -14,9 +14,10 @@ class IsAuthorOrAuthenticatedReadOnly(BasePermission):
 
     # read (detail) | update(PUT/PATCH) | delete
     # и только после has_permission вызывается этот метод
+    # и единственное он не будет вызываться ради фуркционала list
     def has_object_permission(self, request, view, obj):
         """
-            Доступ разрушён в 3х случаях:
+            Доступ разрушён в 1м из 3х случаев:
             1 - клиент автор поста
             2 - клиент админ
             3 - HTTP метод - GET | HEAD | OPTIONS
