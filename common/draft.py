@@ -220,13 +220,15 @@ sources:
     https://www.django-rest-framework.org/api-guide/permissions/
 
 
+-------------------------------- JWT -----------------------------------------------
 
 """
-from django.contrib.auth import login
+
 from django.contrib.sessions.models import Session
 from django.forms import Form, ValidationError
-from django.http import HttpResponse
-
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 
 def is_banned(user):  # какая-то функция, которая проверяет забанен пользователь или нет
     pass
@@ -250,4 +252,62 @@ class AddPostForm(Form):
         self.cleaned_data['author'] = self._user
         return Post.objects.create(**self.cleaned_data)
 
-Session
+
+from debug_toolbar.middleware import DebugToolbarMiddleware
+from django.middleware.security import SecurityMiddleware
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.middleware.common import CommonMiddleware
+from django.middleware.csrf import CsrfViewMiddleware
+from django.contrib.auth.middleware import AuthenticationMiddleware
+from django.contrib.messages.middleware import MessageMiddleware
+from django.middleware.clickjacking import XFrameOptionsMiddleware
+
+MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+from django.contrib.auth import login, logout
+
+import json
+
+from django.http import HttpResponse
+
+
+class AjaxHttpResponse(HttpResponse):
+    def __init__(self, status='ok', **kwargs):
+        kwargs['status'] = status
+        super(AjaxHttpResponse, self).__init__(
+            content_type='application/json',
+            content=json.dumps(kwargs)
+        )
+
+
+class AjaxBadHttpResponse(AjaxHttpResponse):
+    def __init__(self, code, message, **kwargs):
+        super(AjaxBadHttpResponse, self).__init__(
+            status='error',
+            code=code,  # пояснение для программиста
+            message=message,  # пояснение для клиента
+            **kwargs
+        )
+
+
+require_POST
+"""
+HttpResponseBase
+def __init__(
+        self, content_type=None, status=None, reason=None, charset=None, headers=None
+    ):
+
+HttpResponse 
+    def __init__(self, content=b"", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Content is a bytestring. See the `content` property methods.
+        self.content = content
+"""
